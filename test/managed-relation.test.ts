@@ -71,8 +71,8 @@ describe('with relation', function () {
     });
 
     it('every query has to be realized manually', async function () {
-        const superCar1 = await BetterCar.create({name: 'SuperCar1', gearShift: 'automatic'});
-        const superCar2 = await BetterCar.create({name: 'SuperCar2', gearShift: 'automatic'});
+        await BetterCar.create({name: 'SuperCar1', gearShift: 'automatic'});
+        await BetterCar.create({name: 'SuperCar2', gearShift: 'automatic'});
         await BetterCar.create({name: 'NiceCar1', gearShift: 'semi-automatic'});
         await BetterCar.create({name: 'NiceCar2', gearShift: 'semi-automatic'});
         await BetterCar.create({name: 'SimpleCar1', gearShift: 'manual'});
@@ -82,7 +82,7 @@ describe('with relation', function () {
         const coolDriver = await BetterDriver.create({name: 'Cool Driver', preferredGearShift: 'automatic'});
 
         async function getDriverWithPreferredCars(driverId: string): Promise<BetterDriver | null> {
-            return BetterDriver.findOne({where: {id: driverId}, include: [{model: BetterDriver}]});
+            return BetterDriver.findOne({where: {id: driverId}, include: [{model: BetterCar}]});
         }
 
         const hydratedDriver = await getDriverWithPreferredCars(coolDriver.id);
