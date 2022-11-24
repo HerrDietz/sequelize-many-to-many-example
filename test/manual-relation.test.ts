@@ -21,10 +21,8 @@ export class SimpleCar extends Model<InferAttributes<SimpleCar>, InferCreationAt
     @Column(DataType.STRING(120))
     name!: string;
 
-
     @Column(GearShiftType)
     gearShift!: GearShift;
-
 
 }
 
@@ -65,7 +63,7 @@ describe('without relation', function () {
         await sequelize.sync();
     });
 
-    it('every query has to be realized manually', async function () {
+    it('we can just query for cars, not for eagerly loaded drivers', async function () {
         const superCar1 = await SimpleCar.create({name: 'SuperCar1', gearShift: 'automatic'});
         const superCar2 = await SimpleCar.create({name: 'SuperCar2', gearShift: 'automatic'});
         await SimpleCar.create({name: 'NiceCar1', gearShift: 'semi-automatic'});
@@ -76,6 +74,7 @@ describe('without relation', function () {
         await SimpleDriver.create({name: 'Simple Driver', preferredGearShift: 'manual'});
         const coolDriver = await SimpleDriver.create({name: 'Cool Driver', preferredGearShift: 'automatic'});
 
+        //Note: The result is an array of cars. This is not what I want. I want a Driver with an eagerly loaded array of cars.
         async function getPreferredCarsForDriver(driver: SimpleDriver): Promise<SimpleCar[]> {
             return SimpleCar.findAll({where: {gearShift: driver.preferredGearShift}});
         }

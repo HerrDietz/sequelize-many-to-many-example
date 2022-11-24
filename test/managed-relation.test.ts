@@ -70,7 +70,7 @@ describe('with relation', function () {
         await sequelize.sync();
     });
 
-    it('every query has to be realized manually', async function () {
+    it('well... how does this work?', async function () {
         await BetterCar.create({name: 'SuperCar1', gearShift: 'automatic'});
         await BetterCar.create({name: 'SuperCar2', gearShift: 'automatic'});
         await BetterCar.create({name: 'NiceCar1', gearShift: 'semi-automatic'});
@@ -81,6 +81,7 @@ describe('with relation', function () {
         await BetterDriver.create({name: 'Simple Driver', preferredGearShift: 'manual'});
         const coolDriver = await BetterDriver.create({name: 'Cool Driver', preferredGearShift: 'automatic'});
 
+        //This is, what I want: simple & expressive
         async function getDriverWithPreferredCars(driverId: string): Promise<BetterDriver | null> {
             return BetterDriver.findOne({where: {id: driverId}, include: [{model: BetterCar}]});
         }

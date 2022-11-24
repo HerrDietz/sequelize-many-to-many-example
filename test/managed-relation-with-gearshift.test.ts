@@ -25,10 +25,6 @@ const GearShiftType = DataType.STRING(13);
 export class GearShift extends Model<InferAttributes<GearShift>, InferCreationAttributes<GearShift>> {
 
     @PrimaryKey
-    @Default(DataType.UUIDV4)
-    @Column(DataType.UUIDV4)
-    id!: CreationOptional<string>;
-
     @Column(GearShiftType)
     name!: GearShiftValues;
 
@@ -56,7 +52,7 @@ export class MediumCar extends Model<InferAttributes<MediumCar>, InferCreationAt
     gearShift!: CreationOptional<GearShift>;
 
     @ForeignKey(() => GearShift)
-    @Column(DataType.UUIDV4)
+    @Column(GearShiftType)
     gearShiftId!: string;
 
 
@@ -77,14 +73,13 @@ export class MediumDriver extends Model<InferAttributes<MediumDriver>, InferCrea
     preferredGearShift!: CreationOptional<GearShift>;
 
     @ForeignKey(() => GearShift)
-    @Column(DataType.UUIDV4)
+    @Column(GearShiftType)
     preferredGearShiftId!: string;
 
 }
 
 
-
-describe('with relation', function () {
+describe('with relation with explicit gear-entity', function () {
     let sequelize!: Sequelize;
 
     before(async function () {
@@ -94,7 +89,7 @@ describe('with relation', function () {
             username: 'test-user',
             password: '',
             storage: ':memory:',
-            //storage: 'db.sqlite',
+           // storage: 'db.sqlite',
             logging: (sql, more) => console.log(sql),
             models: [GearShift, MediumCar, MediumDriver]
         });
@@ -105,20 +100,21 @@ describe('with relation', function () {
         await sequelize.sync();
     });
 
-    it('every query has to be realized manually', async function () {
+    it('we have to create gears in the database', async function () {
         const automatic = await GearShift.create({name: 'automatic'});
         const semiAutomatic = await GearShift.create({name: 'semi-automatic'});
         const manual = await GearShift.create({name: 'manual'});
-        await MediumCar.create({name: 'SuperCar1', gearShiftId: automatic.id});
-        await MediumCar.create({name: 'SuperCar2', gearShiftId: automatic.id});
-        await MediumCar.create({name: 'NiceCar1', gearShiftId: semiAutomatic.id});
-        await MediumCar.create({name: 'NiceCar2', gearShiftId: semiAutomatic.id});
-        await MediumCar.create({name: 'SimpleCar1', gearShiftId: manual.id});
-        await MediumCar.create({name: 'SimpleCar2', gearShiftId: manual.id});
+        await MediumCar.create({name: 'SuperCar1', gearShiftId: automatic.name});
+        await MediumCar.create({name: 'SuperCar2', gearShiftId: automatic.name});
+        await MediumCar.create({name: 'NiceCar1', gearShiftId: semiAutomatic.name});
+        await MediumCar.create({name: 'NiceCar2', gearShiftId: semiAutomatic.name});
+        await MediumCar.create({name: 'SimpleCar1', gearShiftId: manual.name});
+        await MediumCar.create({name: 'SimpleCar2', gearShiftId: manual.name});
 
-        await MediumDriver.create({name: 'Simple Driver', preferredGearShiftId: manual.id});
-        const naivlyLoadedDriver = await MediumDriver.create({name: 'Cool Driver', preferredGearShiftId: automatic.id});
+        await MediumDriver.create({name: 'Simple Driver', preferredGearShiftId: manual.name});
+        const naivlyLoadedDriver = await MediumDriver.create({name: 'Cool Driver', preferredGearShiftId: automatic.name});
 
+        // unlike mannual-relation.test, we get a driver with an eagerly loaded association. Nevertheless: Quiet complex.
         async function getDriverWithPreferredCars(driverId: string): Promise<MediumDriver | null> {
             return MediumDriver.findOne({
                 where: {id: driverId},
@@ -132,7 +128,7 @@ describe('with relation', function () {
 
         const hydratedDriver = (await getDriverWithPreferredCars(naivlyLoadedDriver.id))!;
         expect(hydratedDriver).to.exist;
-        //eagerly loaded assoctiation.
+        //eagerly loaded association.
         expect(hydratedDriver!.preferredGearShift).to.exist
         expect(hydratedDriver!.preferredGearShift.cars.length).to.eq(2)
 
